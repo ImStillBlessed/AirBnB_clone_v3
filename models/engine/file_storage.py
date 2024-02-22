@@ -108,5 +108,5 @@ class FileStorage:
                 count = len(self.all(cls))
            else:
                 return None
-           return count
+        return count
 
