@@ -15,10 +15,10 @@ def teardown_appcontext(arg=None):
 
 @app.errorhandler(404)
 def page_not_found(e):
-    404_json = {
+    error_json = {
             "error": "Not found"
             }
-    return 404_json, 404
+    return error_json, 404
 
 if __name__ == "__main__":
     host = os.environ.get('HBNB_API_HOST', '0.0.0.0')
