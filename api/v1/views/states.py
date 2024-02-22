@@ -1,12 +1,13 @@
 from flask import jsonify, request
 from api.v1.views import app_views
+from models import storage
 from models.state import State
 
 @app_views.route("/states", methods=['GET', 'POST'])
 def for_states():
     if request.method == 'GET':
-        states = State.all()
-        return [State.to_dict() for state in states]
+        states = storage.all('State')
+        return [state.to_dict() for state in states]
     elif request.method == 'POST':
         data = request.get_json()
         if not data:
@@ -19,12 +20,12 @@ def for_states():
     
 @app_views.route('/states/<state_id>', methods=['GET', 'PUT','DELETE'])
 def for_state(state_id):
-    state = State.get(state_id)
+    state = storage.get(State, state_id)
     if not state:
         return jsonify({"error": "State not found"}), 404
     
     if request.method == 'GET':
-        return State.to_dict()
+        return state.to_dict()
     
     elif request.method == 'PUT':
         data = request.get_json()
@@ -34,7 +35,7 @@ def for_state(state_id):
             if key not in ['id', 'created_at', 'uptated_at']:
                 setattr(state, key, value)
         state.save()
-        return State.to_dict(), 200
+        return state.to_dict(), 200
     
     elif request.method == 'DELETE':
         state.delete()
