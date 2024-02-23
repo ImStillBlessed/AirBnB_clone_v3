@@ -4,8 +4,7 @@ views module for the state routes
 and api requests
 """
 from flask import jsonify, abort, request
-from api.v1.views import app_views
-from models import storage
+from api.v1.views import app_views, storage
 from models.state import State
 
 @app_views.route("/states", methods=['GET', 'POST'])
@@ -35,7 +34,7 @@ def for_state(state_id):
     elif request.method == 'PUT':
         data = request.get_json()
         if not data:
-            return jsonify({"error": "Not a JSON"}), 400
+            abort(400, 'Invalid JSON')
         for key, value in data.items():
             if key not in ['id', 'created_at', 'uptated_at']:
                 setattr(state, key, value)
@@ -43,6 +42,7 @@ def for_state(state_id):
         return jsonify(state.to_dict()), 200
     
     elif request.method == 'DELETE':
-        state.delete()
+        storage.delete(state)
+        storage.save()
         return jsonify({}), 200
     
