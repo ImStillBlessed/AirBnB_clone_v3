@@ -26,8 +26,8 @@ def delete_state(state_id):
 @app_views.route("/states", methods=["POST"], strict_slashes=False)
 def create_state():
     state_data = request.get_json()
-    if not state_data or "email" not in state_data or "password" not in state_data:
-        abort(400, 'Invalid JSON or missing email/password')
+    if not state_data or "name" not in state_data:
+        abort(400, 'Invalid JSON or missing name')
     state = State(**state_data)
     state.save()
     return jsonify(state.to_dict()), 201
@@ -41,7 +41,7 @@ def update_state(state_id):
     if not state_data:
         abort(400, 'Invalid JSON')
     for key, value in state_data.items():
-        if key not in ["id", "email", "password", "created_at", "updated_at"]:
+        if key not in ["id", "created_at", "updated_at"]:
             setattr(state, key, value)
     state.save()
     return jsonify(state.to_dict()), 200
