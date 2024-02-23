@@ -3,7 +3,7 @@
 views module for the state routes
 and api requests
 """
-from flask import jsonify, request
+from flask import jsonify, abort, request
 from api.v1.views import app_views
 from models import storage
 from models.state import State
@@ -12,7 +12,7 @@ from models.state import State
 def for_states():
     if request.method == 'GET':
         states = storage.all('State')
-        return [state.to_dict() for state in states]
+        return jsonify([state.to_dict() for state in states])
     elif request.method == 'POST':
         data = request.get_json()
         if not data:
@@ -21,7 +21,7 @@ def for_states():
             return jsonify({"error": "Missing name"}), 400
         new_state = State(**data)
         new_state.save()
-        return new_state.to_dict(), 201
+        return jsonify(new_state.to_dict()), 201
     
 @app_views.route('/states/<state_id>', methods=['GET', 'PUT','DELETE'])
 def for_state(state_id):
@@ -30,7 +30,7 @@ def for_state(state_id):
         return jsonify({"error": "State not found"}), 404
     
     if request.method == 'GET':
-        return state.to_dict()
+        return jsonify(state.to_dict())
     
     elif request.method == 'PUT':
         data = request.get_json()
@@ -40,7 +40,7 @@ def for_state(state_id):
             if key not in ['id', 'created_at', 'uptated_at']:
                 setattr(state, key, value)
         state.save()
-        return state.to_dict(), 200
+        return jsonify(state.to_dict()), 200
     
     elif request.method == 'DELETE':
         state.delete()
