@@ -5,8 +5,6 @@ Route for handling Places objects and operations
 from flask import jsonify, abort, request
 from api.v1.views import app_views, storage
 from models.place import Place
-from models.city import City
-from models.user import User
 
 @app_views.route("/cities/<city_id>/places", methods=["GET"], strict_slashes=False)
 def get_places_by_city(city_id):
