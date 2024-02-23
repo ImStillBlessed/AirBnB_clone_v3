@@ -1,4 +1,8 @@
 #!/usr/bin/python3
+"""
+app module for handling errors
+and the appview default path
+"""
 from flask import Flask
 from models import storage
 from api.v1.views import app_views
