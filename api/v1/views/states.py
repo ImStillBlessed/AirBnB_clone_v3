@@ -11,8 +11,8 @@ from models.state import State
 @app_views.route("/states", methods=['GET', 'POST'])
 def for_states():
     if request.method == 'GET':
-        states = storage.all('State')
-        return jsonify([state.to_dict() for state in states])
+        states = storage.all("State")
+        return jsonify([state.to_dict() for state in states.values()])
     elif request.method == 'POST':
         data = request.get_json()
         if not data:
@@ -25,7 +25,7 @@ def for_states():
     
 @app_views.route('/states/<state_id>', methods=['GET', 'PUT','DELETE'])
 def for_state(state_id):
-    state = storage.get(State, state_id)
+    state = storage.get("State", state_id)
     if not state:
         return jsonify({"error": "State not found"}), 404
     
