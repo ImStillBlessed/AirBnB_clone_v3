@@ -1,4 +1,7 @@
 #!/usr/bin/python3
+"""
+Route for handling Cities objects and operations
+"""
 from flask import jsonify, abort, request
 from api.v1.views import app_views, storage
 from models.city import City
