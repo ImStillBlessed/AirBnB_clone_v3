@@ -6,9 +6,11 @@ and the appview default path
 from flask import Flask
 from models import storage
 from api.v1.views import app_views
+from flask_cors import CORS
 import os
 
 app = Flask(__name__)
+CORS(app)
 app.register_blueprint(app_views)
 
 @app.teardown_appcontext
