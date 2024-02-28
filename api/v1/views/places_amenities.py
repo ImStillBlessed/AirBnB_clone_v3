@@ -1,49 +1,61 @@
 #!/usr/bin/python3
 """
-Route for handling Review objects and operations
+Route for handling amenity objects and operations
 """
 from flask import jsonify, abort, request
 from api.v1.views import app_views, storage
-from models.review import Review
+from os import environ
+from models.amenity import Amenity
 
-@app_views.route("/places/<place_id>/amenities", methods=["GET"], strict_slashes=False)
+
+@app_views.route("/places/<place_id>/amenities", methods=["GET"],
+                 strict_slashes=False)
 def get_amenity_by_place(place_id):
     place = storage.get("Place", place_id)
-    return jsonify([amenity.to_dict() for amenity in place.amenity]) if place else abort(404)
-
-@app_views.route("/reviews/<review_id>", methods=['GET'], strict_slashes=False)
-def get_review(review_id):
-    review = storage.get("Review", review_id)
-    return jsonify(review.to_dict()) if review else abort(404)
-
-@app_views.route("/reviews/<review_id>", methods=["DELETE"], strict_slashes=False)
-def delete_review(review_id):
-    review = storage.get("Review", review_id)
-    if not review:
+    if not place:
         abort(404)
-    storage.delete(review)
+    if environ.get('HBNB_TYPE_STORAGE') == "db":
+        amenities = [amenity.to_dict() for amenity in place.amenities]
+    else:
+        amenities = [storage.get("Amenity", amenity_id).to_dict() for
+                     amenity_id in place.amenity_ids]
+    return jsonify(amenities)
+
+
+@app_views.route("/places/<place_id>/amenities/<amenity_id>",
+                 methods=["DELETE"], strict_slashes=False)
+def delete_place_amenity(place_id, amenity_id):
+    place = storage.get("Place", place_id)
+    if not place:
+        abort(404, 'place not found')
+    amenity = storage.get("Amenity", amenity_id)
+    if not amenity:
+        abort(404, "amenity not found")
+
+    if environ.get('HBNB_TYPE_STORAGE') == "db":
+        if amenity not in place.amenities:
+            abort(404)
+        place.amenities.remove(amenity)
+    else:
+        if amenity_id not in place.amenity_ids:
+            abort(404)
+        place.amenity_ids.remove(amenity_id)
     storage.save()
     return jsonify({}), 200
 
-@app_views.route("/places/<place_id>/reviews", methods=["POST"], strict_slashes=False)
-def create_review(place_id):
-    place = storage.get("Place", place_id)
-    data = request.get_json()
-    if not (place and data and "user_id" in data and "text" in data and storage.get("User", data["user_id"])):
-        abort(400, 'Invalid JSON or missing user_id/text')
-    data["place_id"] = place_id
-    review = Review(**data)
-    review.save()
-    return jsonify(review.to_dict()), 201
 
-@app_views.route("/reviews/<review_id>", methods=["PUT"], strict_slashes=False)
-def update_review(review_id):
-    review = storage.get("review", review_id)
+@app_views.route("/places/<place_id>/amenities/<amenity_id>",
+                 methods=["POST"], strict_slashes=False)
+def create_amenity(place_id, amenity_id):
+    place = storage.get("Place", place_id)
+    if not place:
+        abort(404, 'invalid place')
     data = request.get_json()
-    if not (review and data):
-        abort(404 if not review else 400, 'Invalid JSON')
-    for key, value in data.items():
-        if key not in ["id", "user_id", "place_id", "created_at", "updated_at"]:
-            setattr(review, key, value)
-    review.save()
-    return jsonify(review.to_dict()), 200
+    if not data:
+        abort(400, 'missing json data')
+    data["place_id"] = place_id
+    data["amenity_id"] = amenity_id
+
+    amenity = Amenity(**data)
+    amenity.save()
+    return jsonify(amenity.to_dict()), 201
